@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUOMSIANGCRYP-AUDIOMUSIC</title>
+    <title>SUOMSIANGCRYP-ADIOMUSIC</title>
     <link rel="icon" type="image/png" href="favicon.png">
     
     <style>
         /* ==================== CORE 3D GEAR VARIABLE ==================== */
         :root {
-            --bg-page: #131417;
+            --bg-page: transparent; /* เปลี่ยนเป็นโปร่งใสเพื่อให้เครื่องเล่นลอยตัว */
             --panel-bg: linear-gradient(145deg, #3a3f47 0%, #1c1e21 100%);
             --panel-inner: #0b0c0e;
             --text-color: #ffffff;
@@ -17,7 +17,7 @@
             --edge-glow: #70f3ff;
             --knob-bg: conic-gradient(from 145deg, #7c838e, #2d3137, #9ca5b4, #26292e, #7c838e);
             --border-radius-main: 28px;
-            --box-3d-shadow: 0 20px 40px rgba(0,0,0,0.7), inset 0 2px 3px rgba(255,255,255,0.25);
+            --box-3d-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 2px 3px rgba(255,255,255,0.25);
             --btn-3d-shadow: 0 6px 12px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.25);
             --inset-deep-shadow: inset 0 4px 10px rgba(0,0,0,0.85), 0 1px 2px rgba(255,255,255,0.05);
         }
@@ -37,12 +37,13 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            transition: all 0.4s ease;
+            overflow: hidden; /* ซ่อน scrollbar นอกเครื่องเล่น */
         }
 
-        /* เมนเฟรมหลักแกะโครงสร้าง 3D ลึกหนาพรีเมียม */
+        /* เมนเฟรมหลัก */
         .cyber-player {
-            width: 860px;
+            width: 100%;
+            max-width: 860px;
             background: var(--panel-bg);
             border-radius: var(--border-radius-main);
             padding: 25px;
@@ -52,10 +53,9 @@
             display: grid;
             grid-template-columns: 1fr 1.2fr 1fr;
             gap: 20px;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* หัวข้อแอปด้านบน */
+        /* หัวข้อแอปด้านบน - ตั้งค่าให้คลิกลากย้ายหน้าต่างโปรแกรมได้ */
         .player-header {
             grid-column: span 3;
             display: flex;
@@ -63,6 +63,7 @@
             align-items: center;
             border-bottom: 2px solid rgba(0,0,0,0.4);
             padding-bottom: 15px;
+            -webkit-app-region: drag; /* 👈 ทำให้แถบบนสุดคลิกลากย้ายตัวเครื่องเล่นบนจอได้ */
         }
 
         .brand-zone {
@@ -88,13 +89,44 @@
             box-shadow: inset 0 3px 6px rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.1);
         }
 
-        /* ฝั่งซ้าย: จอดิสเพลย์เจาะลึก 3D */
-        .left-col {
+        /* ขวาบนสุด: โซนปุ่มปิดโปรแกรมแบบ 3D ฝังในเครื่อง */
+        .window-controls-zone {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
-            grid-column: span 1;
+            align-items: center;
+            gap: 10px;
+            -webkit-app-region: no-drag; /* ปลดล็อกปุ่มไม่ให้โดนคุณสมบัติลากบดบัง */
         }
+
+        /* ดีไซน์ปุ่มกากบาทปิดสีแดงพรีเมียม */
+        .close-app-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff5f56, #cc2920);
+            border: 1px solid #b31e17;
+            color: #540200;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.4);
+            transition: all 0.2s;
+        }
+        .close-app-btn:hover {
+            background: linear-gradient(135deg, #ff7b72, #e63c32);
+            color: #ffffff;
+            box-shadow: 0 0 10px #ff5f56;
+        }
+
+        /* ทุกชิ้นส่วนที่มีการโต้ตอบ ต้องปิดการลากเพื่อไม่ให้เมาส์ค้าง */
+        .left-col, .center-col, .right-col, .bottom-row, .progress-container, .config-bar {
+            -webkit-app-region: no-drag;
+        }
+
+        /* ฝั่งซ้าย: จอดิสเพลย์เจาะลึก 3D */
+        .left-col { display: flex; flex-direction: column; gap: 12px; grid-column: span 1; }
 
         .visualizer-card {
             background: #050608;
@@ -106,178 +138,61 @@
             box-shadow: var(--inset-deep-shadow);
         }
 
-        .visualizer-card video {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0; left: 0;
-            object-fit: contain;
-        }
-
-        .visualizer-card canvas {
-            width: 100%;
-            height: 90px;
-            position: absolute;
-            bottom: 0; left: 0;
-            z-index: 10;
-            pointer-events: none;
-        }
+        .visualizer-card video { width: 100%; height: 100%; position: absolute; top: 0; left: 0; object-fit: contain; }
+        .visualizer-card canvas { width: 100%; height: 90px; position: absolute; bottom: 0; left: 0; z-index: 10; pointer-events: none; }
 
         .track-info-box {
-            font-size: 11px;
-            font-weight: bold;
-            color: #9aa2ae;
-            padding: 6px 12px;
-            background: #0b0c0e;
-            border-radius: 10px;
-            border: 1px solid #23252a;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap;
+            font-size: 11px; font-weight: bold; color: #9aa2ae; padding: 6px 12px; background: #0b0c0e;
+            border-radius: 10px; border: 1px solid #23252a; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
         }
 
         /* ตรงกลาง: แผ่นเสียงครอบวงแหวนขอบหนาหนานูนเด่น มีไฟเรืองแสงรอบขอบ */
-        .center-col {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            grid-column: span 1;
-        }
+        .center-col { display: flex; flex-direction: column; align-items: center; justify-content: center; grid-column: span 1; }
 
         .vinyl-outer-ring {
-            width: 248px;
-            height: 248px;
-            background: linear-gradient(145deg, #22252a, #383d46);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 12px 28px rgba(0,0,0,0.65), inset 0 2px 4px rgba(255,255,255,0.2);
-            border: 2px solid #2c3037;
-            position: relative;
-            cursor: pointer;
-            transition: box-shadow 0.1s ease;
+            width: 248px; height: 248px; background: linear-gradient(145deg, #22252a, #383d46); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; border: 2px solid #2c3037;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.65), inset 0 2px 4px rgba(255,255,255,0.2); position: relative; cursor: pointer;
         }
-
-        .vinyl-outer-ring.playing-glow {
-            box-shadow: 0 0 25px var(--edge-glow), inset 0 2px 4px rgba(255,255,255,0.2);
-        }
+        .vinyl-outer-ring.playing-glow { box-shadow: 0 0 25px var(--edge-glow), inset 0 2px 4px rgba(255,255,255,0.2); }
 
         .vinyl-container {
-            width: 226px;
-            height: 226px;
-            background: radial-gradient(circle, #2d2d2d 8%, #141414 35%, #000 65%);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 6px solid #111214;
-            box-shadow: inset 0 0 15px rgba(255,255,255,0.06), 0 5px 12px rgba(0,0,0,0.8);
-            position: relative;
-            pointer-events: none;
+            width: 226px; height: 226px; background: radial-gradient(circle, #2d2d2d 8%, #141414 35%, #000 65%);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 6px solid #111214;
+            box-shadow: inset 0 0 15px rgba(255,255,255,0.06), 0 5px 12px rgba(0,0,0,0.8); position: relative; pointer-events: none;
         }
 
-        .vinyl-logo {
-            width: 100%; height: 100%;
-            border-radius: 50%;
-            transition: transform 0.2s linear;
-        }
-
-        .vinyl-logo.spinning {
-            animation: spin 8s linear infinite;
-        }
+        .vinyl-logo { width: 100%; height: 100%; border-radius: 50%; transition: transform 0.2s linear; }
+        .vinyl-logo.spinning { animation: spin 8s linear infinite; }
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* ฝั่งขวา: แผง 3D EQ เจาะลึก และปุ่ม Volume อลูมิเนียมขัดเงา */
-        .right-col {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            grid-column: span 1;
-        }
-
-        .eq-container {
-            background: var(--panel-inner);
-            border-radius: 18px;
-            padding: 15px;
-            border: 1px solid #23252a;
-            box-shadow: var(--inset-deep-shadow);
-        }
-
-        .eq-title {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-weight: bold;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-        }
-
+        .right-col { display: flex; flex-direction: column; gap: 15px; grid-column: span 1; }
+        .eq-container { background: var(--panel-inner); border-radius: 18px; padding: 15px; border: 1px solid #23252a; box-shadow: var(--inset-deep-shadow); }
+        .eq-title { font-size: 11px; color: var(--text-muted); font-weight: bold; margin-bottom: 12px; display: flex; justify-content: space-between; }
         .eq-sliders { display: flex; justify-content: space-around; height: 75px; }
-
-        .eq-track {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 11px;
-            color: #79818c;
-            font-weight: bold;
-            gap: 6px;
-        }
+        .eq-track { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #79818c; font-weight: bold; gap: 6px; }
 
         .eq-track input[type="range"] {
-            writing-mode: vertical-lr;
-            direction: rtl;
-            width: 10px;
-            height: 55px;
-            background: #050608;
-            border-radius: 6px;
-            outline: none;
-            cursor: pointer;
-            box-shadow: inset 0 3px 5px rgba(0,0,0,0.6);
-            -webkit-appearance: none;
+            writing-mode: vertical-lr; direction: rtl; width: 10px; height: 55px; background: #050608;
+            border-radius: 6px; outline: none; cursor: pointer; box-shadow: inset 0 3px 5px rgba(0,0,0,0.6); -webkit-appearance: none;
         }
-
         .eq-track input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 14px; height: 14px;
-            border-radius: 50%;
-            border: 2px solid #222;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.4);
-            cursor: pointer;
+            -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #222;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.4); cursor: pointer;
         }
         #bassSlider::-webkit-slider-thumb { background: #ff4949; box-shadow: 0 0 8px #ff4949; }
         #midSlider::-webkit-slider-thumb { background: #00ffcc; box-shadow: 0 0 8px #00ffcc; }
         #trebleSlider::-webkit-slider-thumb { background: #ff9900; box-shadow: 0 0 8px #ff9900; }
 
         .volume-zone { display: flex; flex-direction: column; align-items: center; }
-
-        /* วอลลุ่มโลหะนูนสลักเงาเฉียงพร้อมวงแหวนไฟรอบขอบ */
         .big-knob-wrapper {
-            width: 135px; height: 135px;
-            border-radius: 50%;
-            background: var(--knob-bg);
-            border: 6px solid var(--panel-inner);
-            box-shadow: var(--btn-3d-shadow), 0 0 0 1px rgba(255,255,255,0.05);
-            position: relative;
-            cursor: pointer;
-            transform: rotate(0deg);
-            transition: box-shadow 0.1s ease;
+            width: 135px; height: 135px; border-radius: 50%; background: var(--knob-bg); border: 6px solid var(--panel-inner);
+            box-shadow: var(--btn-3d-shadow), 0 0 0 1px rgba(255,255,255,0.05); position: relative; cursor: pointer; transform: rotate(0deg); transition: box-shadow 0.1s ease;
         }
-
-        .knob-indicator {
-            position: absolute;
-            top: 10px; left: 50%;
-            width: 4px; height: 16px;
-            background: var(--edge-glow);
-            border-radius: 2px;
-            transform: translateX(-50%);
-            box-shadow: 0 0 8px var(--edge-glow);
-        }
-
+        .knob-indicator { position: absolute; top: 10px; left: 50%; width: 4px; height: 16px; background: var(--edge-glow); border-radius: 2px; transform: translateX(-50%); box-shadow: 0 0 8px var(--edge-glow); }
         .vol-label { margin-top: 8px; font-size: 11px; font-weight: 800; color: #9aa2ae; text-transform: uppercase; letter-spacing: 1px; }
 
         /* โหมดจัดวางเมื่อเป็น MP4 วิดีโอ */
@@ -296,100 +211,43 @@
         .cyber-player.video-mode .big-knob-wrapper { width: 85px; height: 85px; border-width: 4px; }
 
         /* แถบไทม์ไลน์ยาวร่องลึก */
-        .progress-container { grid-column: span 3; display: flex; align-items: center; gap: 12px; padding: 5px 0; }
+        .progress-container { display: flex; align-items: center; gap: 12px; padding: 5px 0; }
         .progress-bar {
             flex: 1; height: 6px; accent-color: var(--edge-glow); cursor: pointer;
             background: #050608; border-radius: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.7);
         }
 
         /* แถวล่างปุ่มคอนโทรลและแผงเพลง */
-        .bottom-row {
-            grid-column: span 3;
-            display: grid;
-            grid-template-columns: 1fr 1.2fr 1fr;
-            gap: 20px;
-            align-items: center;
-            border-top: 2px solid rgba(0,0,0,0.4);
-            padding-top: 15px;
-        }
-
+        .bottom-row { grid-column: span 3; display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 20px; align-items: center; border-top: 2px solid rgba(0,0,0,0.4); padding-top: 15px; }
         .playback-controls { display: flex; justify-content: center; align-items: center; gap: 10px; }
 
         .ctrl-btn {
-            width: 46px; height: 46px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #444952 0%, #1a1c1e 100%);
-            border: 2px solid #2c2f35;
-            color: #ffffff;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: var(--btn-3d-shadow);
-            transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #444952 0%, #1a1c1e 100%);
+            border: 2px solid #2c2f35; color: #ffffff; font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center;
+            box-shadow: var(--btn-3d-shadow); transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
         .ctrl-btn:active { transform: scale(0.93); box-shadow: 0 2px 4px rgba(0,0,0,0.6); }
-        
-        .ctrl-btn.play-main {
-            width: 62px; height: 62px;
-            background: radial-gradient(circle, #253f50 0%, #0e141a 100%);
-            border: 3px solid var(--edge-glow);
-            font-size: 20px;
-            color: var(--edge-glow);
-            box-shadow: 
-                0 8px 20px rgba(0,0,0,0.6), 
-                inset 0 2px 4px rgba(255,255,255,0.35),
-                0 0 15px rgba(112,243,255,0.4);
-        }
+        .ctrl-btn.play-main { width: 62px; height: 62px; background: radial-gradient(circle, #253f50 0%, #0e141a 100%); border: 3px solid var(--edge-glow); font-size: 20px; color: var(--edge-glow); box-shadow: 0 8px 20px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.35), 0 0 15px rgba(112,243,255,0.4); }
         .ctrl-btn.active-mode { border-color: #ffcc00; color: #ffcc00; box-shadow: 0 0 12px rgba(255,204,0,0.4); }
 
-        /* แผงคลังเพลงเจาะร่องลึกสไตล์คอนโซล */
-        .playlist-card {
-            background: var(--panel-inner);
-            border-radius: 18px;
-            padding: 12px;
-            height: 120px;
-            overflow-y: auto;
-            border: 1px solid #23252a;
-            box-shadow: var(--inset-deep-shadow);
-        }
-
+        .playlist-card { background: var(--panel-inner); border-radius: 18px; padding: 12px; height: 120px; overflow-y: auto; border: 1px solid #23252a; box-shadow: var(--inset-deep-shadow); }
         .playlist-title { font-size: 11px; font-weight: 800; margin-bottom: 8px; display: flex; justify-content: space-between; color: #9aa2ae; }
         .track-list { list-style: none; }
-        .track-item {
-            font-size: 11px; padding: 6px; border-radius: 6px; cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); margin-bottom: 4px;
-        }
+        .track-item { font-size: 11px; padding: 6px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); margin-bottom: 4px; }
         .track-item:hover, .track-item.active { background: rgba(255,255,255,0.04); color: var(--edge-glow); }
         .delete-btn { background: none; border: none; color: #ff3c3c; font-size: 11px; cursor: pointer; padding: 2px 6px; }
 
-        /* แผงฟังก์ชันล่างสุด */
-        .config-bar {
-            grid-column: span 3;
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--panel-inner); padding: 10px 15px; border-radius: 14px; border: 1px solid #23252a;
-        }
-
+        .config-bar { grid-column: span 3; display: flex; justify-content: space-between; align-items: center; background: var(--panel-inner); padding: 10px 15px; border-radius: 14px; border: 1px solid #23252a; }
         .style-picker-zone { display: flex; align-items: center; gap: 6px; }
-        .style-select {
-            background: #1c1d22; color: #fff; border: 1px solid #383c44; padding: 5px 8px; border-radius: 8px; cursor: pointer; font-size: 11px; outline: none;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
-        }
-        .upload-btn {
-            background: linear-gradient(180deg, #70f3ff 0%, #00b3cc 100%); color: #000;
-            padding: 7px 18px; border-radius: 20px; border: none; font-weight: 800; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,179,204,0.35);
-        }
+        .style-select { background: #1c1d22; color: #fff; border: 1px solid #383c44; padding: 5px 8px; border-radius: 8px; cursor: pointer; font-size: 11px; outline: none; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
+        .upload-btn { background: linear-gradient(180deg, #70f3ff 0%, #00b3cc 100%); color: #000; padding: 7px 18px; border-radius: 20px; border: none; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(0,179,204,0.35); }
 
-        /* ==================== 11 PREMIUM SKINS CODE LAYERS ==================== */
+        /* ==================== SKINS ==================== */
         .skin-3d-gear { }
         .skin-cyberpunk { --panel-bg: linear-gradient(135deg, #2b2e33 0%, #151618 100%); --panel-inner: #0f1011; --edge-glow: #00ffcc; }
         .skin-gold { --panel-bg: linear-gradient(135deg, #3a3126 0%, #1a1611 100%); --panel-inner: #100d0a; --edge-glow: #ffd700; --text-color: #f5e7c1; }
         .skin-retro-dj { --panel-bg: linear-gradient(135deg, #44474a 0%, #222426 100%); --panel-inner: #121314; --edge-glow: #ff5500; }
-        .skin-minimal {
-            --bg-page: #eaeef3; --panel-bg: linear-gradient(145deg, #ffffff, #e6eaf0); --panel-inner: #f1f3f7; --text-color: #1c2024; --edge-glow: #0066ff; --text-muted: #7e8c9f;
-            --btn-3d-shadow: 0 4px 8px rgba(0,0,0,0.08), inset 0 1px 1px #fff; --inset-deep-shadow: inset 0 3px 6px rgba(0,0,0,0.08);
-        }
+        .skin-minimal { --panel-bg: linear-gradient(145deg, #ffffff, #e6eaf0); --panel-inner: #f1f3f7; --text-color: #1c2024; --edge-glow: #0066ff; --text-muted: #7e8c9f; --btn-3d-shadow: 0 4px 8px rgba(0,0,0,0.08), inset 0 1px 1px #fff; --inset-deep-shadow: inset 0 3px 6px rgba(0,0,0,0.08); }
         .skin-scifi { --panel-bg: linear-gradient(135deg, #10223b 0%, #050d18 100%); --panel-inner: #02060c; --edge-glow: #00bfff; }
         .skin-vintage { --panel-bg: linear-gradient(135deg, #593119 0%, #26140a 100%); --panel-inner: #160b05; --edge-glow: #ff9933; }
         .skin-obsidian { --panel-bg: linear-gradient(135deg, #1c1c1c 0%, #0f0f0f 100%); --panel-inner: #080808; --edge-glow: #555555; }
@@ -411,9 +269,15 @@
                 SUOMSIANG
             </div>
             <div class="center-title">SUOMSIANG</div>
-            <div style="font-size: 11px; color: var(--text-muted); font-weight: bold;">MP3 / MP4 PLAYER</div>
+            
+            <!-- โซนปุ่มปิดโปรแกรมฝังในขวาบนตัวเครื่องเล่นตามสั่ง -->
+            <div class="window-controls-zone">
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: bold; margin-right: 10px;">MP3/MP4</div>
+                <button class="close-app-btn" id="closeAppBtn" title="ปิดโปรแกรม">✕</button>
+            </div>
         </div>
 
+        <!-- หน้าจอหลักซ้ายมือ -->
         <div class="left-col" id="mainScreenZone">
             <div class="visualizer-card">
                 <video id="mainVideo" style="display:none;"></video>
@@ -422,6 +286,7 @@
             <div class="track-info-box" id="trackName">No song selected</div>
         </div>
 
+        <!-- แผ่นเสียงตรงกลาง -->
         <div class="center-col" id="centerZone">
             <div class="vinyl-outer-ring" id="vinylPlayClick" title="คลิกตรงนี้เพื่อ เล่น / หยุดเพลง">
                 <div class="vinyl-container">
@@ -436,6 +301,7 @@
             </div>
         </div>
 
+        <!-- แผงขวา EQ และ Volume -->
         <div class="right-col" id="rightZone">
             <div class="eq-container">
                 <div class="eq-title"><span>-</span><span>+0</span><span>+</span></div>
@@ -454,12 +320,14 @@
             </div>
         </div>
 
+        <!-- แถบไทม์ไลน์ -->
         <div class="progress-container">
             <span id="timeCurrent" style="font-size:11px; font-weight:bold; color:var(--text-muted);">00:00</span>
             <input type="range" id="trackProgress" class="progress-bar" value="0" min="0" max="100">
             <span id="timeTotal" style="font-size:11px; font-weight:bold; color:var(--text-muted);">00:00</span>
         </div>
 
+        <!-- แผงควบคุมและชุดคลังเพลง -->
         <div class="bottom-row">
             <div class="playback-controls">
                 <button class="ctrl-btn" id="btnLoopAll" title="วนกลับมาเพลงแรกเมื่อจบเพลงสุดท้าย">🔁</button>
@@ -480,6 +348,7 @@
             </div>
         </div>
 
+        <!-- แผงแถบเลือกสไตล์ด้านล่างสุด พร้อมปุ่มเลือก Skin UI ครบครัน -->
         <div class="config-bar">
             <div class="style-picker-zone">
                 <label style="font-weight:bold; color:#a2aab5;">Skin UI:</label>
@@ -522,6 +391,12 @@
     </div>
 
     <script>
+        // ดึงการประมวลผลคำสั่งปิดของ Electron มาทำงานร่วมกับปุ่มกากบาทสีแดง
+        const { ipcRenderer } = require('electron');
+        document.getElementById('closeAppBtn').onclick = () => {
+            ipcRenderer.send('close-app');
+        };
+
         const video = document.getElementById('mainVideo');
         const fileChooser = document.getElementById('fileChooser');
         const trackListUI = document.getElementById('trackList');
@@ -642,7 +517,6 @@
                 const delBtn = document.createElement('button');
                 delBtn.className = 'delete-btn';
                 delBtn.innerText = '❌';
-                // แก้ไขจุดบกพร่องตัวแปรลบเพลงจาก (index) เป็น (i) เพื่อให้ฟังก์ชันรู้จักตำแหน่งที่ถูกต้องเป๊ะๆ ครับ
                 delBtn.onclick = (e) => {
                     e.stopPropagation();
                     removeTrack(i);
@@ -701,7 +575,7 @@
                 playBtn.innerText = '⏸';
                 vinylDisk.classList.add('spinning');
                 vinylPlayClick.classList.add('playing-glow');
-            }).catch(err => console.log("User click gesture required"));
+            }).catch(err => console.log("User gesture needed"));
 
             updatePlaylistUI();
         }
@@ -747,6 +621,7 @@
         document.getElementById('btnNext').onclick = () => handleNextTrack();
         document.getElementById('btnPrev').onclick = () => { if(currentIndex > 0) playTrack(currentIndex - 1); };
 
+        UX การลากขยับเพลงเปลี่ยน
         function handleNextTrack() {
             if (currentIndex < songs.length - 1) { playTrack(currentIndex + 1); } 
             else { if (playMode === 'all') playTrack(0); else { playBtn.innerText = '▶'; vinylDisk.classList.remove('spinning'); vinylPlayClick.classList.remove('playing-glow'); } }
@@ -774,12 +649,12 @@
                 midFilter = audioCtx.createBiquadFilter(); midFilter.type = 'peaking'; midFilter.frequency.value = 1000; midFilter.Q.value = 1.0;
                 trebleFilter = audioCtx.createBiquadFilter(); trebleFilter.type = 'highshelf'; trebleFilter.frequency.value = 4000;
 
-                source.connect(bassFilter); bassFilter.connect(midFilter); midFilter.connect(trebleFilter);
+                source.connect(bassFilter); bassFilter.connect(midFilter); bassFilter.connect(trebleFilter);
                 trebleFilter.connect(analyser); analyser.connect(audioCtx.destination);
 
                 renderWaves();
             } catch(e) {
-                console.log("Audio network syncing...");
+                console.log("Audio process setting up...");
             }
         }
 
