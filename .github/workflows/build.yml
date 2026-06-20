@@ -1,0 +1,31 @@
+name: Build Electron App
+on:
+  push:
+    branches:
+      - main  # ระบบจะทำงานทันทีเมื่อมีการอัปเดตโค้ดใน branch main
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Check out git repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Electron App to EXE
+        run: npm run dist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Artifact Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: SUOMSIANG-Windows-EXE
+          path: dist/*.exe
