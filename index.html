@@ -9,7 +9,6 @@
     <style>
         /* ==================== CORE 3D GEAR VARIABLE ==================== */
         :root {
-            --bg-page: transparent; /* เปลี่ยนเป็นโปร่งใสเพื่อให้เครื่องเล่นลอยตัว */
             --panel-bg: linear-gradient(145deg, #3a3f47 0%, #1c1e21 100%);
             --panel-inner: #0b0c0e;
             --text-color: #ffffff;
@@ -17,7 +16,7 @@
             --edge-glow: #70f3ff;
             --knob-bg: conic-gradient(from 145deg, #7c838e, #2d3137, #9ca5b4, #26292e, #7c838e);
             --border-radius-main: 28px;
-            --box-3d-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 2px 3px rgba(255,255,255,0.25);
+            --box-3d-shadow: 0 15px 35px rgba(0,0,0,0.8), inset 0 2px 3px rgba(255,255,255,0.25);
             --btn-3d-shadow: 0 6px 12px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.25);
             --inset-deep-shadow: inset 0 4px 10px rgba(0,0,0,0.85), 0 1px 2px rgba(255,255,255,0.05);
         }
@@ -30,20 +29,20 @@
         }
 
         body {
-            background-color: var(--bg-page);
+            background-color: transparent; /* โปร่งใสทะลุจอ */
             color: var(--text-color);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
-            overflow: hidden; /* ซ่อน scrollbar นอกเครื่องเล่น */
+            padding: 0; /* ❌ ลบ Padding รอบตัวเครื่องออกเพื่อทำลายเงาสี่เหลี่ยมที่ติดขอบ */
+            overflow: hidden;
         }
 
         /* เมนเฟรมหลัก */
         .cyber-player {
-            width: 100%;
-            max-width: 860px;
+            width: 860px;
+            height: 720px;
             background: var(--panel-bg);
             border-radius: var(--border-radius-main);
             padding: 25px;
@@ -55,7 +54,7 @@
             gap: 20px;
         }
 
-        /* หัวข้อแอปด้านบน - ตั้งค่าให้คลิกลากย้ายหน้าต่างโปรแกรมได้ */
+        /* แถบบนสุดสำหรับแดรกลากหน้าต่าง */
         .player-header {
             grid-column: span 3;
             display: flex;
@@ -63,7 +62,7 @@
             align-items: center;
             border-bottom: 2px solid rgba(0,0,0,0.4);
             padding-bottom: 15px;
-            -webkit-app-region: drag; /* 👈 ทำให้แถบบนสุดคลิกลากย้ายตัวเครื่องเล่นบนจอได้ */
+            -webkit-app-region: drag;
         }
 
         .brand-zone {
@@ -89,55 +88,57 @@
             box-shadow: inset 0 3px 6px rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.1);
         }
 
-        /* ขวาบนสุด: โซนปุ่มปิดโปรแกรมแบบ 3D ฝังในเครื่อง */
+        /* แผงควบคุมย่อ-ปิดโปรแกรมระบบ 3D */
         .window-controls-zone {
             display: flex;
             align-items: center;
-            gap: 10px;
-            -webkit-app-region: no-drag; /* ปลดล็อกปุ่มไม่ให้โดนคุณสมบัติลากบดบัง */
+            gap: 8px;
+            -webkit-app-region: no-drag;
         }
 
-        /* ดีไซน์ปุ่มกากบาทปิดสีแดงพรีเมียม */
-        .close-app-btn {
+        .win-btn {
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #ff5f56, #cc2920);
-            border: 1px solid #b31e17;
-            color: #540200;
+            border: none;
+            color: #ffffff;
             font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.4);
-            transition: all 0.2s;
-        }
-        .close-app-btn:hover {
-            background: linear-gradient(135deg, #ff7b72, #e63c32);
-            color: #ffffff;
-            box-shadow: 0 0 10px #ff5f56;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.3);
+            transition: all 0.2s ease;
         }
 
-        /* ทุกชิ้นส่วนที่มีการโต้ตอบ ต้องปิดการลากเพื่อไม่ให้เมาส์ค้าง */
+        /* ปุ่มย่อหน้าต่างสีเหลืองส้มพรีเมียม */
+        .minimize-btn {
+            background: linear-gradient(135deg, #ffbd2e, #de9105);
+            border: 1px solid #b87b00;
+            color: #5c3a00;
+        }
+        .minimize-btn:hover { background: linear-gradient(135deg, #ffd061, #f7a81b); color: #fff; box-shadow: 0 0 8px #ffbd2e; }
+
+        /* ปุ่มปิดหน้าต่างสีแดงพรีเมียม */
+        .close-app-btn {
+            background: linear-gradient(135deg, #ff5f56, #cc2920);
+            border: 1px solid #b31e17;
+            color: #540200;
+        }
+        .close-app-btn:hover { background: linear-gradient(135deg, #ff7b72, #e63c32); color: #fff; box-shadow: 0 0 8px #ff5f56; }
+
+        /* ส่วนอื่นๆ ทั้งหมด บล็อกไม่ให้ขัดจังหวะการคลิก */
         .left-col, .center-col, .right-col, .bottom-row, .progress-container, .config-bar {
             -webkit-app-region: no-drag;
         }
 
-        /* ฝั่งซ้าย: จอดิสเพลย์เจาะลึก 3D */
+        /* ฝั่งซ้าย: หน้าจอแสดงผล */
         .left-col { display: flex; flex-direction: column; gap: 12px; grid-column: span 1; }
-
         .visualizer-card {
-            background: #050608;
-            height: 220px;
-            border-radius: 18px;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid #1a1c20;
-            box-shadow: var(--inset-deep-shadow);
+            background: #050608; height: 220px; border-radius: 18px; position: relative; overflow: hidden;
+            border: 2px solid #1a1c20; box-shadow: var(--inset-deep-shadow);
         }
-
         .visualizer-card video { width: 100%; height: 100%; position: absolute; top: 0; left: 0; object-fit: contain; }
         .visualizer-card canvas { width: 100%; height: 90px; position: absolute; bottom: 0; left: 0; z-index: 10; pointer-events: none; }
 
@@ -147,28 +148,25 @@
             text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
         }
 
-        /* ตรงกลาง: แผ่นเสียงครอบวงแหวนขอบหนาหนานูนเด่น มีไฟเรืองแสงรอบขอบ */
+        /* ตรงกลาง: แผ่นเสียงครอบวงแหวนขอบหนาหนานูนเด่น */
         .center-col { display: flex; flex-direction: column; align-items: center; justify-content: center; grid-column: span 1; }
-
         .vinyl-outer-ring {
             width: 248px; height: 248px; background: linear-gradient(145deg, #22252a, #383d46); border-radius: 50%;
             display: flex; justify-content: center; align-items: center; border: 2px solid #2c3037;
             box-shadow: 0 12px 28px rgba(0,0,0,0.65), inset 0 2px 4px rgba(255,255,255,0.2); position: relative; cursor: pointer;
         }
         .vinyl-outer-ring.playing-glow { box-shadow: 0 0 25px var(--edge-glow), inset 0 2px 4px rgba(255,255,255,0.2); }
-
         .vinyl-container {
             width: 226px; height: 226px; background: radial-gradient(circle, #2d2d2d 8%, #141414 35%, #000 65%);
             border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 6px solid #111214;
             box-shadow: inset 0 0 15px rgba(255,255,255,0.06), 0 5px 12px rgba(0,0,0,0.8); position: relative; pointer-events: none;
         }
-
         .vinyl-logo { width: 100%; height: 100%; border-radius: 50%; transition: transform 0.2s linear; }
         .vinyl-logo.spinning { animation: spin 8s linear infinite; }
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* ฝั่งขวา: แผง 3D EQ เจาะลึก และปุ่ม Volume อลูมิเนียมขัดเงา */
+        /* ฝั่งขวา: แผง 3D EQ เจาะลึก และปุ่ม Volume */
         .right-col { display: flex; flex-direction: column; gap: 15px; grid-column: span 1; }
         .eq-container { background: var(--panel-inner); border-radius: 18px; padding: 15px; border: 1px solid #23252a; box-shadow: var(--inset-deep-shadow); }
         .eq-title { font-size: 11px; color: var(--text-muted); font-weight: bold; margin-bottom: 12px; display: flex; justify-content: space-between; }
@@ -210,8 +208,8 @@
         .cyber-player.video-mode .eq-container { background: transparent; padding: 0; box-shadow: none; border: none; }
         .cyber-player.video-mode .big-knob-wrapper { width: 85px; height: 85px; border-width: 4px; }
 
-        /* แถบไทม์ไลน์ยาวร่องลึก */
-        .progress-container { display: flex; align-items: center; gap: 12px; padding: 5px 0; }
+        /* แถบไทม์ไลน์ */
+        .progress-container { display: flex; align-items: center; gap: 12px; padding: 5px 0; grid-column: span 3; }
         .progress-bar {
             flex: 1; height: 6px; accent-color: var(--edge-glow); cursor: pointer;
             background: #050608; border-radius: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.7);
@@ -242,7 +240,7 @@
         .style-select { background: #1c1d22; color: #fff; border: 1px solid #383c44; padding: 5px 8px; border-radius: 8px; cursor: pointer; font-size: 11px; outline: none; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
         .upload-btn { background: linear-gradient(180deg, #70f3ff 0%, #00b3cc 100%); color: #000; padding: 7px 18px; border-radius: 20px; border: none; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(0,179,204,0.35); }
 
-        /* ==================== SKINS ==================== */
+        /* Skins */
         .skin-3d-gear { }
         .skin-cyberpunk { --panel-bg: linear-gradient(135deg, #2b2e33 0%, #151618 100%); --panel-inner: #0f1011; --edge-glow: #00ffcc; }
         .skin-gold { --panel-bg: linear-gradient(135deg, #3a3126 0%, #1a1611 100%); --panel-inner: #100d0a; --edge-glow: #ffd700; --text-color: #f5e7c1; }
@@ -270,14 +268,14 @@
             </div>
             <div class="center-title">SUOMSIANG</div>
             
-            <!-- โซนปุ่มปิดโปรแกรมฝังในขวาบนตัวเครื่องเล่นตามสั่ง -->
+            <!-- อัปเดตแผงปุ่ม ย่อหน้าต่าง (-) และปิดหน้าต่าง (✕) แบบ 3D แท้ -->
             <div class="window-controls-zone">
-                <div style="font-size: 11px; color: var(--text-muted); font-weight: bold; margin-right: 10px;">MP3/MP4</div>
-                <button class="close-app-btn" id="closeAppBtn" title="ปิดโปรแกรม">✕</button>
+                <button class="win-btn minimize-btn" id="minimizeAppBtn" title="ย่อโปรแกรมลงทาสก์บาร์">—</button>
+                <button class="win-btn close-app-btn" id="closeAppBtn" title="ปิดโปรแกรม">✕</button>
             </div>
         </div>
 
-        <!-- หน้าจอหลักซ้ายมือ -->
+        <!-- หน้าจอซ้ายมือ -->
         <div class="left-col" id="mainScreenZone">
             <div class="visualizer-card">
                 <video id="mainVideo" style="display:none;"></video>
@@ -327,7 +325,7 @@
             <span id="timeTotal" style="font-size:11px; font-weight:bold; color:var(--text-muted);">00:00</span>
         </div>
 
-        <!-- แผงควบคุมและชุดคลังเพลง -->
+        <!-- แผงควบคุมและคลังเพลง -->
         <div class="bottom-row">
             <div class="playback-controls">
                 <button class="ctrl-btn" id="btnLoopAll" title="วนกลับมาเพลงแรกเมื่อจบเพลงสุดท้าย">🔁</button>
@@ -348,7 +346,7 @@
             </div>
         </div>
 
-        <!-- แผงแถบเลือกสไตล์ด้านล่างสุด พร้อมปุ่มเลือก Skin UI ครบครัน -->
+        <!-- แผงควบคุมล่างสุด -->
         <div class="config-bar">
             <div class="style-picker-zone">
                 <label style="font-weight:bold; color:#a2aab5;">Skin UI:</label>
@@ -391,11 +389,11 @@
     </div>
 
     <script>
-        // ดึงการประมวลผลคำสั่งปิดของ Electron มาทำงานร่วมกับปุ่มกากบาทสีแดง
+        // เรียกคำสั่งควบคุมหน้าต่างของ Electron (IPC)
         const { ipcRenderer } = require('electron');
-        document.getElementById('closeAppBtn').onclick = () => {
-            ipcRenderer.send('close-app');
-        };
+        
+        document.getElementById('closeAppBtn').onclick = () => { ipcRenderer.send('close-app'); };
+        document.getElementById('minimizeAppBtn').onclick = () => { ipcRenderer.send('minimize-app'); };
 
         const video = document.getElementById('mainVideo');
         const fileChooser = document.getElementById('fileChooser');
@@ -550,7 +548,7 @@
             const target = songs[currentIndex];
             
             if(!target.url && !target.isLocalFile) {
-                alert(`กรุณากดปุ่ม 📂 ADD MUSIC เลือกไฟล์ "${target.title}" เพื่อทำการโหลดเล่นไฟล์ต่อเนื่องครับ`);
+                alert(`กรุณากดปุ่ม 📂 ADD MUSIC เลือกไฟล์ "${target.title}" เพื่อโหลดไฟล์เข้าใช้งานเซสชันนี้อีกครั้งครับ`);
                 return;
             }
 
@@ -621,7 +619,6 @@
         document.getElementById('btnNext').onclick = () => handleNextTrack();
         document.getElementById('btnPrev').onclick = () => { if(currentIndex > 0) playTrack(currentIndex - 1); };
 
-        UX การลากขยับเพลงเปลี่ยน
         function handleNextTrack() {
             if (currentIndex < songs.length - 1) { playTrack(currentIndex + 1); } 
             else { if (playMode === 'all') playTrack(0); else { playBtn.innerText = '▶'; vinylDisk.classList.remove('spinning'); vinylPlayClick.classList.remove('playing-glow'); } }
@@ -654,7 +651,7 @@
 
                 renderWaves();
             } catch(e) {
-                console.log("Audio process setting up...");
+                console.log("Audio network error config.");
             }
         }
 
