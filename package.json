@@ -1,0 +1,25 @@
+{
+  "name": "suomsiang-player",
+  "version": "1.0.0",
+  "description": "SUOMSIANG MP3 MP4 Player 3D",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "keywords": [],
+  "author": "SUOMSIANG",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.suomsiang.player",
+    "productName": "SUOMSIANG-Player",
+    "win": {
+      "target": "nsis",
+      "icon": "favicon.png"
+    }
+  }
+}

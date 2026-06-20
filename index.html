@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUOMSIANGCRYP-AUDIOMUSIC</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <style>
+        /* ==================== CORE 3D GEAR VARIABLE ==================== */
+        :root {
+            --bg-page: #131417;
+            --panel-bg: linear-gradient(145deg, #3a3f47 0%, #1c1e21 100%);
+            --panel-inner: #0b0c0e;
+            --text-color: #ffffff;
+            --text-muted: #838a94;
+            --edge-glow: #70f3ff;
+            --knob-bg: conic-gradient(from 145deg, #7c838e, #2d3137, #9ca5b4, #26292e, #7c838e);
+            --border-radius-main: 28px;
+            --box-3d-shadow: 0 20px 40px rgba(0,0,0,0.7), inset 0 2px 3px rgba(255,255,255,0.25);
+            --btn-3d-shadow: 0 6px 12px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.25);
+            --inset-deep-shadow: inset 0 4px 10px rgba(0,0,0,0.85), 0 1px 2px rgba(255,255,255,0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            transition: all 0.4s ease;
+        }
+
+        /* เมนเฟรมหลักแกะโครงสร้าง 3D ลึกหนาพรีเมียม */
+        .cyber-player {
+            width: 860px;
+            background: var(--panel-bg);
+            border-radius: var(--border-radius-main);
+            padding: 25px;
+            border: 2px solid #4a515c;
+            box-shadow: var(--box-3d-shadow), 0 0 35px rgba(112,243,255,0.15);
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            gap: 20px;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* หัวข้อแอปด้านบน */
+        .player-header {
+            grid-column: span 3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(0,0,0,0.4);
+            padding-bottom: 15px;
+        }
+
+        .brand-zone {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+        }
+
+        .mini-logo { width: 32px; height: 32px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+
+        .center-title {
+            background: linear-gradient(180deg, #16171a, #0b0c0d);
+            padding: 6px 40px;
+            border-radius: 14px;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            border: 1px solid #282a30;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.1);
+        }
+
+        /* ฝั่งซ้าย: จอดิสเพลย์เจาะลึก 3D */
+        .left-col {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            grid-column: span 1;
+        }
+
+        .visualizer-card {
+            background: #050608;
+            height: 220px;
+            border-radius: 18px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #1a1c20;
+            box-shadow: var(--inset-deep-shadow);
+        }
+
+        .visualizer-card video {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            object-fit: contain;
+        }
+
+        .visualizer-card canvas {
+            width: 100%;
+            height: 90px;
+            position: absolute;
+            bottom: 0; left: 0;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .track-info-box {
+            font-size: 11px;
+            font-weight: bold;
+            color: #9aa2ae;
+            padding: 6px 12px;
+            background: #0b0c0e;
+            border-radius: 10px;
+            border: 1px solid #23252a;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        /* ตรงกลาง: แผ่นเสียงครอบวงแหวนขอบหนาหนานูนเด่น มีไฟเรืองแสงรอบขอบ */
+        .center-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            grid-column: span 1;
+        }
+
+        .vinyl-outer-ring {
+            width: 248px;
+            height: 248px;
+            background: linear-gradient(145deg, #22252a, #383d46);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.65), inset 0 2px 4px rgba(255,255,255,0.2);
+            border: 2px solid #2c3037;
+            position: relative;
+            cursor: pointer;
+            transition: box-shadow 0.1s ease;
+        }
+
+        .vinyl-outer-ring.playing-glow {
+            box-shadow: 0 0 25px var(--edge-glow), inset 0 2px 4px rgba(255,255,255,0.2);
+        }
+
+        .vinyl-container {
+            width: 226px;
+            height: 226px;
+            background: radial-gradient(circle, #2d2d2d 8%, #141414 35%, #000 65%);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 6px solid #111214;
+            box-shadow: inset 0 0 15px rgba(255,255,255,0.06), 0 5px 12px rgba(0,0,0,0.8);
+            position: relative;
+            pointer-events: none;
+        }
+
+        .vinyl-logo {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            transition: transform 0.2s linear;
+        }
+
+        .vinyl-logo.spinning {
+            animation: spin 8s linear infinite;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* ฝั่งขวา: แผง 3D EQ เจาะลึก และปุ่ม Volume อลูมิเนียมขัดเงา */
+        .right-col {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            grid-column: span 1;
+        }
+
+        .eq-container {
+            background: var(--panel-inner);
+            border-radius: 18px;
+            padding: 15px;
+            border: 1px solid #23252a;
+            box-shadow: var(--inset-deep-shadow);
+        }
+
+        .eq-title {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .eq-sliders { display: flex; justify-content: space-around; height: 75px; }
+
+        .eq-track {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 11px;
+            color: #79818c;
+            font-weight: bold;
+            gap: 6px;
+        }
+
+        .eq-track input[type="range"] {
+            writing-mode: vertical-lr;
+            direction: rtl;
+            width: 10px;
+            height: 55px;
+            background: #050608;
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+            box-shadow: inset 0 3px 5px rgba(0,0,0,0.6);
+            -webkit-appearance: none;
+        }
+
+        .eq-track input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            border: 2px solid #222;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.4);
+            cursor: pointer;
+        }
+        #bassSlider::-webkit-slider-thumb { background: #ff4949; box-shadow: 0 0 8px #ff4949; }
+        #midSlider::-webkit-slider-thumb { background: #00ffcc; box-shadow: 0 0 8px #00ffcc; }
+        #trebleSlider::-webkit-slider-thumb { background: #ff9900; box-shadow: 0 0 8px #ff9900; }
+
+        .volume-zone { display: flex; flex-direction: column; align-items: center; }
+
+        /* วอลลุ่มโลหะนูนสลักเงาเฉียงพร้อมวงแหวนไฟรอบขอบ */
+        .big-knob-wrapper {
+            width: 135px; height: 135px;
+            border-radius: 50%;
+            background: var(--knob-bg);
+            border: 6px solid var(--panel-inner);
+            box-shadow: var(--btn-3d-shadow), 0 0 0 1px rgba(255,255,255,0.05);
+            position: relative;
+            cursor: pointer;
+            transform: rotate(0deg);
+            transition: box-shadow 0.1s ease;
+        }
+
+        .knob-indicator {
+            position: absolute;
+            top: 10px; left: 50%;
+            width: 4px; height: 16px;
+            background: var(--edge-glow);
+            border-radius: 2px;
+            transform: translateX(-50%);
+            box-shadow: 0 0 8px var(--edge-glow);
+        }
+
+        .vol-label { margin-top: 8px; font-size: 11px; font-weight: 800; color: #9aa2ae; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* โหมดจัดวางเมื่อเป็น MP4 วิดีโอ */
+        .cyber-player.video-mode { grid-template-columns: 1fr 1fr; }
+        .cyber-player.video-mode .left-col { grid-column: span 3; }
+        .cyber-player.video-mode .visualizer-card { height: 420px; }
+        .cyber-player.video-mode .center-col { grid-column: span 1; margin-top: 10px; }
+        .cyber-player.video-mode .vinyl-outer-ring { width: 110px; height: 110px; }
+        .cyber-player.video-mode .vinyl-container { width: 100px; height: 100px; border-width: 3px; }
+        .cyber-player.video-mode .vinyl-logo text { display: none; }
+        .cyber-player.video-mode .right-col {
+            grid-column: span 1; flex-direction: row; align-items: center; justify-content: space-around;
+            background: var(--panel-inner); border-radius: 18px; padding: 12px; margin-top: 10px; border: 1px solid #23252a;
+        }
+        .cyber-player.video-mode .eq-container { background: transparent; padding: 0; box-shadow: none; border: none; }
+        .cyber-player.video-mode .big-knob-wrapper { width: 85px; height: 85px; border-width: 4px; }
+
+        /* แถบไทม์ไลน์ยาวร่องลึก */
+        .progress-container { grid-column: span 3; display: flex; align-items: center; gap: 12px; padding: 5px 0; }
+        .progress-bar {
+            flex: 1; height: 6px; accent-color: var(--edge-glow); cursor: pointer;
+            background: #050608; border-radius: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.7);
+        }
+
+        /* แถวล่างปุ่มคอนโทรลและแผงเพลง */
+        .bottom-row {
+            grid-column: span 3;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            gap: 20px;
+            align-items: center;
+            border-top: 2px solid rgba(0,0,0,0.4);
+            padding-top: 15px;
+        }
+
+        .playback-controls { display: flex; justify-content: center; align-items: center; gap: 10px; }
+
+        .ctrl-btn {
+            width: 46px; height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #444952 0%, #1a1c1e 100%);
+            border: 2px solid #2c2f35;
+            color: #ffffff;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: var(--btn-3d-shadow);
+            transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .ctrl-btn:active { transform: scale(0.93); box-shadow: 0 2px 4px rgba(0,0,0,0.6); }
+        
+        .ctrl-btn.play-main {
+            width: 62px; height: 62px;
+            background: radial-gradient(circle, #253f50 0%, #0e141a 100%);
+            border: 3px solid var(--edge-glow);
+            font-size: 20px;
+            color: var(--edge-glow);
+            box-shadow: 
+                0 8px 20px rgba(0,0,0,0.6), 
+                inset 0 2px 4px rgba(255,255,255,0.35),
+                0 0 15px rgba(112,243,255,0.4);
+        }
+        .ctrl-btn.active-mode { border-color: #ffcc00; color: #ffcc00; box-shadow: 0 0 12px rgba(255,204,0,0.4); }
+
+        /* แผงคลังเพลงเจาะร่องลึกสไตล์คอนโซล */
+        .playlist-card {
+            background: var(--panel-inner);
+            border-radius: 18px;
+            padding: 12px;
+            height: 120px;
+            overflow-y: auto;
+            border: 1px solid #23252a;
+            box-shadow: var(--inset-deep-shadow);
+        }
+
+        .playlist-title { font-size: 11px; font-weight: 800; margin-bottom: 8px; display: flex; justify-content: space-between; color: #9aa2ae; }
+        .track-list { list-style: none; }
+        .track-item {
+            font-size: 11px; padding: 6px; border-radius: 6px; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); margin-bottom: 4px;
+        }
+        .track-item:hover, .track-item.active { background: rgba(255,255,255,0.04); color: var(--edge-glow); }
+        .delete-btn { background: none; border: none; color: #ff3c3c; font-size: 11px; cursor: pointer; padding: 2px 6px; }
+
+        /* แผงฟังก์ชันล่างสุด */
+        .config-bar {
+            grid-column: span 3;
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--panel-inner); padding: 10px 15px; border-radius: 14px; border: 1px solid #23252a;
+        }
+
+        .style-picker-zone { display: flex; align-items: center; gap: 6px; }
+        .style-select {
+            background: #1c1d22; color: #fff; border: 1px solid #383c44; padding: 5px 8px; border-radius: 8px; cursor: pointer; font-size: 11px; outline: none;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+        }
+        .upload-btn {
+            background: linear-gradient(180deg, #70f3ff 0%, #00b3cc 100%); color: #000;
+            padding: 7px 18px; border-radius: 20px; border: none; font-weight: 800; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,179,204,0.35);
+        }
+
+        /* ==================== 11 PREMIUM SKINS CODE LAYERS ==================== */
+        .skin-3d-gear { }
+        .skin-cyberpunk { --panel-bg: linear-gradient(135deg, #2b2e33 0%, #151618 100%); --panel-inner: #0f1011; --edge-glow: #00ffcc; }
+        .skin-gold { --panel-bg: linear-gradient(135deg, #3a3126 0%, #1a1611 100%); --panel-inner: #100d0a; --edge-glow: #ffd700; --text-color: #f5e7c1; }
+        .skin-retro-dj { --panel-bg: linear-gradient(135deg, #44474a 0%, #222426 100%); --panel-inner: #121314; --edge-glow: #ff5500; }
+        .skin-minimal {
+            --bg-page: #eaeef3; --panel-bg: linear-gradient(145deg, #ffffff, #e6eaf0); --panel-inner: #f1f3f7; --text-color: #1c2024; --edge-glow: #0066ff; --text-muted: #7e8c9f;
+            --btn-3d-shadow: 0 4px 8px rgba(0,0,0,0.08), inset 0 1px 1px #fff; --inset-deep-shadow: inset 0 3px 6px rgba(0,0,0,0.08);
+        }
+        .skin-scifi { --panel-bg: linear-gradient(135deg, #10223b 0%, #050d18 100%); --panel-inner: #02060c; --edge-glow: #00bfff; }
+        .skin-vintage { --panel-bg: linear-gradient(135deg, #593119 0%, #26140a 100%); --panel-inner: #160b05; --edge-glow: #ff9933; }
+        .skin-obsidian { --panel-bg: linear-gradient(135deg, #1c1c1c 0%, #0f0f0f 100%); --panel-inner: #080808; --edge-glow: #555555; }
+        .skin-vaporwave { --panel-bg: linear-gradient(135deg, #523a78 0%, #221538 100%); --panel-inner: #140b24; --edge-glow: #ff007f; }
+        .skin-matrix { --panel-bg: linear-gradient(135deg, #092009 0%, #020802 100%); --panel-inner: #000000; --edge-glow: #00ff33; }
+        .skin-glass { --panel-bg: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%); --panel-inner: rgba(0,0,0,0.3); --edge-glow: rgba(255,255,255,0.4); }
+    </style>
+</head>
+<body class="skin-3d-gear" id="bodyNode">
+
+    <div class="cyber-player" id="playerContainer">
+        <div class="player-header">
+            <div class="brand-zone">
+                <svg class="mini-logo" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="48" fill="#e2dd0d"/>
+                    <circle cx="50" cy="50" r="20" fill="#d60000"/>
+                    <polygon points="45,40 65,50 45,60" fill="#fff"/>
+                </svg>
+                SUOMSIANG
+            </div>
+            <div class="center-title">SUOMSIANG</div>
+            <div style="font-size: 11px; color: var(--text-muted); font-weight: bold;">MP3 / MP4 PLAYER</div>
+        </div>
+
+        <div class="left-col" id="mainScreenZone">
+            <div class="visualizer-card">
+                <video id="mainVideo" style="display:none;"></video>
+                <canvas id="canvasVisualizer"></canvas>
+            </div>
+            <div class="track-info-box" id="trackName">No song selected</div>
+        </div>
+
+        <div class="center-col" id="centerZone">
+            <div class="vinyl-outer-ring" id="vinylPlayClick" title="คลิกตรงนี้เพื่อ เล่น / หยุดเพลง">
+                <div class="vinyl-container">
+                    <svg class="vinyl-logo" id="vinylDisk" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="95" fill="#e2dd0d" stroke="#000" stroke-width="2"/>
+                        <circle cx="100" cy="100" r="35" fill="#d60000"/>
+                        <polygon points="92,82 118,100 92,118" fill="#e2dd0d" stroke="#000" stroke-width="1"/>
+                        <text x="100" y="55" font-family="Impact, Arial Black" font-size="20" fill="#000" text-anchor="middle">SUOMSIANG</text>
+                        <text x="100" y="165" font-family="Impact, Arial Black" font-size="26" fill="#000" text-anchor="middle">CAPCUT</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-col" id="rightZone">
+            <div class="eq-container">
+                <div class="eq-title"><span>-</span><span>+0</span><span>+</span></div>
+                <div class="eq-sliders">
+                    <div class="eq-track"><input type="range" id="bassSlider" min="-10" max="10" value="0"><span>Bass</span></div>
+                    <div class="eq-track"><input type="range" id="midSlider" min="-10" max="10" value="0"><span>Mid</span></div>
+                    <div class="eq-track"><input type="range" id="trebleSlider" min="-10" max="10" value="0"><span>Treble</span></div>
+                </div>
+            </div>
+            
+            <div class="volume-zone">
+                <div class="big-knob-wrapper" id="volKnob">
+                    <div class="knob-indicator"></div>
+                </div>
+                <div class="vol-label">Volume</div>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <span id="timeCurrent" style="font-size:11px; font-weight:bold; color:var(--text-muted);">00:00</span>
+            <input type="range" id="trackProgress" class="progress-bar" value="0" min="0" max="100">
+            <span id="timeTotal" style="font-size:11px; font-weight:bold; color:var(--text-muted);">00:00</span>
+        </div>
+
+        <div class="bottom-row">
+            <div class="playback-controls">
+                <button class="ctrl-btn" id="btnLoopAll" title="วนกลับมาเพลงแรกเมื่อจบเพลงสุดท้าย">🔁</button>
+                <button class="ctrl-btn" id="btnPrev">⏮</button>
+                <button class="ctrl-btn play-main" id="btnPlay">▶</button>
+                <button class="ctrl-btn" id="btnNext">⏭</button>
+                <button class="ctrl-btn" id="btnLoopOne" title="เล่นซ้ำเฉพาะเพลงเดิม">🔂</button>
+            </div>
+
+            <div class="playlist-card">
+                <div class="playlist-title"><span>PLAYLIST</span><span id="trackCount">0 Songs</span></div>
+                <ul class="track-list" id="trackList"></ul>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="upload-btn" onclick="document.getElementById('fileChooser').click()">📂 ADD MUSIC/VIDEO</button>
+                <input type="file" id="fileChooser" accept="audio/*,video/*" multiple style="display:none;">
+            </div>
+        </div>
+
+        <div class="config-bar">
+            <div class="style-picker-zone">
+                <label style="font-weight:bold; color:#a2aab5;">Skin UI:</label>
+                <select id="skinThemePicker" class="style-select">
+                    <option value="skin-3d-gear">1. 3D Audio Gear ★</option>
+                    <option value="skin-cyberpunk">2. Cyberpunk Neon</option>
+                    <option value="skin-gold">3. Gold Luxury</option>
+                    <option value="skin-retro-dj">4. Retro DJ Mixer</option>
+                    <option value="skin-minimal">5. Minimal Stark White</option>
+                    <option value="skin-scifi">6. Sci-Fi Spaceship</option>
+                    <option value="skin-vintage">7. Classic Wood</option>
+                    <option value="skin-obsidian">8. Obsidian Matte</option>
+                    <option value="skin-vaporwave">9. Vaporwave Anime</option>
+                    <option value="skin-matrix">10. Matrix Digital</option>
+                    <option value="skin-glass">11. Glassmorphism</option>
+                </select>
+            </div>
+
+            <div class="style-picker-zone">
+                <label style="font-weight:bold; color:#a2aab5;">Wave:</label>
+                <select id="waveStylePicker" class="style-select">
+                    <option value="1">1. Neon Wave Line</option>
+                    <option value="2" selected>2. Cyber Bar Spectrum</option>
+                    <option value="3">3. Double Mirror Reflection</option>
+                    <option value="4">4. Neon Center Tunnel</option>
+                    <option value="5">5. Glow Liquid Wave</option>
+                    <option value="6">6. Digital Matrix Dots</option>
+                    <option value="7">7. Retro Block Bars</option>
+                    <option value="8">8. Plasma Particle Beats</option>
+                    <option value="9">9. Sound Pulse Ring</option>
+                    <option value="10">10. Cyberpunk City Grid</option>
+                </select>
+            </div>
+
+            <div class="color-picker-zone">
+                <label style="font-weight:bold; color:#a2aab5;">Glow:</label>
+                <input type="color" id="glowPicker" value="#70f3ff" style="cursor:pointer; border:none; background:none; width:30px; height:25px;">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('mainVideo');
+        const fileChooser = document.getElementById('fileChooser');
+        const trackListUI = document.getElementById('trackList');
+        const playBtn = document.getElementById('btnPlay');
+        const vinylDisk = document.getElementById('vinylDisk');
+        const vinylPlayClick = document.getElementById('vinylPlayClick');
+        const trackName = document.getElementById('trackName');
+        const volKnob = document.getElementById('volKnob');
+        const glowPicker = document.getElementById('glowPicker');
+        const playerContainer = document.getElementById('playerContainer');
+        const trackProgress = document.getElementById('trackProgress');
+        const timeCurrent = document.getElementById('timeCurrent');
+        const timeTotal = document.getElementById('timeTotal');
+        
+        const waveStylePicker = document.getElementById('waveStylePicker');
+        const skinThemePicker = document.getElementById('skinThemePicker');
+        const bodyNode = document.getElementById('bodyNode');
+        const btnLoopAll = document.getElementById('btnLoopAll');
+        const btnLoopOne = document.getElementById('btnLoopOne');
+
+        let audioCtx, analyser, source, bassFilter, midFilter, trebleFilter;
+        let canvas = document.getElementById('canvasVisualizer');
+        let ctx = canvas.getContext('2d');
+
+        let songs = [];
+        let currentIndex = -1;
+        let currentWaveStyle = "2"; 
+        let playMode = 'all'; 
+
+        canvas.width = 800;
+        canvas.height = 100;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSongsFromStorage();
+            loadSettingsFromStorage();
+            updateLoopButtonsUI();
+        });
+
+        skinThemePicker.onchange = (e) => { setPlayerSkin(e.target.value); };
+
+        function setPlayerSkin(skinName) {
+            bodyNode.className = skinName;
+            skinThemePicker.value = skinName;
+            localStorage.setItem('suomsiang_skin', skinName);
+        }
+
+        waveStylePicker.onchange = (e) => {
+            currentWaveStyle = e.target.value;
+            localStorage.setItem('suomsiang_wave', currentWaveStyle);
+        };
+
+        fileChooser.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if(files.length === 0) return;
+
+            files.forEach(file => {
+                songs.push({
+                    title: file.name,
+                    url: URL.createObjectURL(file),
+                    type: file.type,
+                    isLocalFile: true
+                });
+            });
+            
+            saveSongsToStorage();
+            updatePlaylistUI();
+            
+            if(currentIndex === -1 && songs.length > 0) {
+                playTrack(0);
+            }
+        });
+
+        function saveSongsToStorage() {
+            const songMetadata = songs.map(s => ({ title: s.title, type: s.type }));
+            localStorage.setItem('suomsiang_playlist', JSON.stringify(songMetadata));
+        }
+
+        function loadSongsFromStorage() {
+            const stored = localStorage.getItem('suomsiang_playlist');
+            if (stored) {
+                const metadataList = JSON.parse(stored);
+                songs = metadataList.map(meta => ({
+                    title: meta.title, url: '', type: meta.type, isLocalFile: false
+                }));
+                updatePlaylistUI();
+            }
+        }
+
+        function loadSettingsFromStorage() {
+            const savedSkin = localStorage.getItem('suomsiang_skin');
+            if (savedSkin) setPlayerSkin(savedSkin);
+            else setPlayerSkin('skin-3d-gear');
+
+            const savedWave = localStorage.getItem('suomsiang_wave');
+            if (savedWave) {
+                currentWaveStyle = savedWave;
+                waveStylePicker.value = savedWave;
+            }
+
+            const savedColor = localStorage.getItem('suomsiang_color');
+            if (savedColor) {
+                glowPicker.value = savedColor;
+                applyGlowColor(savedColor);
+            }
+        }
+
+        function updatePlaylistUI() {
+            trackListUI.innerHTML = '';
+            songs.forEach((song, i) => {
+                const li = document.createElement('li');
+                li.className = `track-item ${i === currentIndex ? 'active' : ''}`;
+                
+                const titleSpan = document.createElement('span');
+                titleSpan.innerText = `${i+1}. ${song.title.substring(0,35)}${song.title.length > 35 ? '...':''}`;
+                titleSpan.style.flex = "1";
+                titleSpan.onclick = () => playTrack(i);
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'delete-btn';
+                delBtn.innerText = '❌';
+                // แก้ไขจุดบกพร่องตัวแปรลบเพลงจาก (index) เป็น (i) เพื่อให้ฟังก์ชันรู้จักตำแหน่งที่ถูกต้องเป๊ะๆ ครับ
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    removeTrack(i);
+                };
+
+                li.appendChild(titleSpan);
+                li.appendChild(delBtn);
+                trackListUI.appendChild(li);
+            });
+            document.getElementById('trackCount').innerText = `${songs.length} Songs`;
+        }
+
+        function removeTrack(index) {
+            songs.splice(index, 1);
+            saveSongsToStorage();
+            if (index === currentIndex) {
+                video.pause(); video.src = ''; trackName.innerText = 'No song selected';
+                currentIndex = -1; playBtn.innerText = '▶'; 
+                vinylDisk.classList.remove('spinning');
+                vinylPlayClick.classList.remove('playing-glow');
+                playerContainer.classList.remove('video-mode');
+            } else if (index < currentIndex) {
+                currentIndex--;
+            }
+            updatePlaylistUI();
+        }
+
+        function playTrack(index) {
+            if(index < 0 || index >= songs.length) return;
+            currentIndex = index;
+            const target = songs[currentIndex];
+            
+            if(!target.url && !target.isLocalFile) {
+                alert(`กรุณากดปุ่ม 📂 ADD MUSIC เลือกไฟล์ "${target.title}" เพื่อทำการโหลดเล่นไฟล์ต่อเนื่องครับ`);
+                return;
+            }
+
+            video.src = target.url;
+            trackName.innerText = target.title;
+
+            if(target.type.includes('video')) {
+                video.style.display = 'block';
+                playerContainer.classList.add('video-mode');
+            } else {
+                video.style.display = 'none';
+                playerContainer.classList.remove('video-mode');
+            }
+
+            if (!audioCtx) {
+                initAudioSystem();
+            } else if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            video.play().then(() => {
+                playBtn.innerText = '⏸';
+                vinylDisk.classList.add('spinning');
+                vinylPlayClick.classList.add('playing-glow');
+            }).catch(err => console.log("User click gesture required"));
+
+            updatePlaylistUI();
+        }
+
+        function togglePlayPause() {
+            if(currentIndex === -1 && songs.length > 0) {
+                playTrack(0);
+                return;
+            }
+            if(currentIndex === -1) return;
+
+            if (!audioCtx) {
+                initAudioSystem();
+            } else if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            if(video.paused) {
+                video.play(); 
+                playBtn.innerText = '⏸'; 
+                vinylDisk.classList.add('spinning');
+                vinylPlayClick.classList.add('playing-glow');
+            } else {
+                video.pause(); 
+                playBtn.innerText = '▶'; 
+                vinylDisk.classList.remove('spinning');
+                vinylPlayClick.classList.remove('playing-glow');
+            }
+        }
+
+        playBtn.onclick = togglePlayPause;
+        vinylPlayClick.onclick = togglePlayPause; 
+
+        btnLoopAll.onclick = () => { playMode = (playMode === 'all') ? 'none' : 'all'; updateLoopButtonsUI(); };
+        btnLoopOne.onclick = () => { playMode = (playMode === 'one') ? 'none' : 'one'; updateLoopButtonsUI(); };
+
+        function updateLoopButtonsUI() {
+            btnLoopAll.classList.remove('active-mode'); btnLoopOne.classList.remove('active-mode');
+            if (playMode === 'all') btnLoopAll.classList.add('active-mode');
+            if (playMode === 'one') btnLoopOne.classList.add('active-mode');
+        }
+
+        document.getElementById('btnNext').onclick = () => handleNextTrack();
+        document.getElementById('btnPrev').onclick = () => { if(currentIndex > 0) playTrack(currentIndex - 1); };
+
+        function handleNextTrack() {
+            if (currentIndex < songs.length - 1) { playTrack(currentIndex + 1); } 
+            else { if (playMode === 'all') playTrack(0); else { playBtn.innerText = '▶'; vinylDisk.classList.remove('spinning'); vinylPlayClick.classList.remove('playing-glow'); } }
+        }
+
+        glowPicker.oninput = (e) => {
+            const color = e.target.value;
+            applyGlowColor(color);
+            localStorage.setItem('suomsiang_color', color);
+        };
+
+        function applyGlowColor(color) {
+            document.documentElement.style.setProperty('--edge-glow', color);
+            playerContainer.style.boxShadow = `var(--box-3d-shadow), 0 0 40px ${color}44`;
+        }
+
+        function initAudioSystem() {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                source = audioCtx.createMediaElementSource(video);
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 256;
+
+                bassFilter = audioCtx.createBiquadFilter(); bassFilter.type = 'lowshelf'; bassFilter.frequency.value = 200;
+                midFilter = audioCtx.createBiquadFilter(); midFilter.type = 'peaking'; midFilter.frequency.value = 1000; midFilter.Q.value = 1.0;
+                trebleFilter = audioCtx.createBiquadFilter(); trebleFilter.type = 'highshelf'; trebleFilter.frequency.value = 4000;
+
+                source.connect(bassFilter); bassFilter.connect(midFilter); midFilter.connect(trebleFilter);
+                trebleFilter.connect(analyser); analyser.connect(audioCtx.destination);
+
+                renderWaves();
+            } catch(e) {
+                console.log("Audio network syncing...");
+            }
+        }
+
+        document.getElementById('bassSlider').oninput = (e) => { if(bassFilter) bassFilter.gain.value = e.target.value; };
+        document.getElementById('midSlider').oninput = (e) => { if(midFilter) midFilter.gain.value = e.target.value; };
+        document.getElementById('trebleSlider').oninput = (e) => { if(trebleFilter) trebleFilter.gain.value = e.target.value; };
+
+        function renderWaves() {
+            requestAnimationFrame(renderWaves);
+            if(!analyser) return;
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyser.getByteFrequencyData(dataArray);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const activeColor = getComputedStyle(document.documentElement).getPropertyValue('--edge-glow').trim();
+            ctx.strokeStyle = activeColor; ctx.fillStyle = activeColor;
+            
+            if(!video.paused) {
+                let bassAvg = dataArray[2] / 255.0;
+                let midAvg = dataArray[10] / 255.0;
+                
+                vinylPlayClick.style.boxShadow = `0 0 ${20 + (bassAvg * 30)}px ${activeColor}, inset 0 2px 4px rgba(255,255,255,0.2)`;
+                volKnob.style.boxShadow = `var(--btn-3d-shadow), 0 0 ${10 + (midAvg * 25)}px ${activeColor}`;
+            } else {
+                volKnob.style.boxShadow = `var(--btn-3d-shadow)`;
+            }
+
+            let barWidth = (canvas.width / bufferLength) * 1.4;
+            let barHeight; let x = 0;
+
+            switch(currentWaveStyle) {
+                case "1":
+                    ctx.lineWidth = 3; ctx.beginPath();
+                    for(let i = 0; i < bufferLength; i++) {
+                        let v = dataArray[i] / 255.0;
+                        let y = canvas.height - (v * (canvas.height - 10)) - 5;
+                        if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                        x += canvas.width / bufferLength;
+                    }
+                    ctx.stroke(); break;
+                case "2":
+                    for(let i = 0; i < bufferLength; i++) {
+                        barHeight = (dataArray[i] / 255.0) * canvas.height;
+                        ctx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight); x += barWidth;
+                    } break;
+                case "3":
+                    ctx.lineWidth = 2; ctx.beginPath();
+                    for(let i = 0; i < bufferLength; i++) {
+                        let v = (dataArray[i] / 255.0) * (canvas.height / 2);
+                        let yUpper = (canvas.height / 2) - v;
+                        if(i === 0) ctx.moveTo(x, yUpper); else ctx.lineTo(x, yUpper);
+                        x += canvas.width / bufferLength;
+                    }
+                    x = 0;
+                    for(let i = 0; i < bufferLength; i++) {
+                        let v = (dataArray[i] / 255.0) * (canvas.height / 2);
+                        let yLower = (canvas.height / 2) + v;
+                        if(i === 0) ctx.moveTo(x, yLower); else ctx.lineTo(x, yLower);
+                        x += canvas.width / bufferLength;
+                    }
+                    ctx.stroke(); break;
+                case "4":
+                    let midX = canvas.width / 2;
+                    for(let i = 0; i < bufferLength / 2; i++) {
+                        barHeight = (dataArray[i] / 255.0) * canvas.height;
+                        ctx.fillRect(midX + x, canvas.height - barHeight, barWidth - 1, barHeight);
+                        ctx.fillRect(midX - x - barWidth, canvas.height - barHeight, barWidth - 1, barHeight);
+                        x += barWidth;
+                    } break;
+                case "5":
+                    ctx.beginPath(); ctx.moveTo(0, canvas.height);
+                    for(let i = 0; i < bufferLength; i++) {
+                        let v = dataArray[i] / 255.0; let y = canvas.height - (v * canvas.height); ctx.lineTo(x, y);
+                        x += canvas.width / bufferLength;
+                    }
+                    ctx.lineTo(canvas.width, canvas.height); ctx.fillStyle = activeColor + "44"; ctx.fill();
+                    ctx.lineWidth = 2; ctx.stroke(); break;
+                case "6":
+                    for(let i = 0; i < bufferLength; i++) {
+                        barHeight = (dataArray[i] / 255.0) * canvas.height; let dotCount = Math.floor(barHeight / 8);
+                        for(let j = 0; j < dotCount; j++) ctx.fillRect(x, canvas.height - (j * 8) - 6, barWidth - 2, 4);
+                        x += barWidth;
+                    } break;
+                case "7":
+                    for(let i = 0; i < bufferLength; i++) {
+                        barHeight = (dataArray[i] / 255.0) * canvas.height; let blockHeight = 12; let blocks = Math.floor(barHeight / blockHeight);
+                        for(let b = 0; b < blocks; b++) ctx.fillRect(x, canvas.height - (b * blockHeight) - 10, barWidth - 3, blockHeight - 3);
+                        x += barWidth;
+                    } break;
+                case "8":
+                    for(let i = 0; i < bufferLength; i += 2) {
+                        barHeight = (dataArray[i] / 255.0) * canvas.height; ctx.fillRect(x, canvas.height - barHeight, 3, barHeight);
+                        if(barHeight > 10) { ctx.beginPath(); ctx.arc(x + 1.5, canvas.height - barHeight - 5, 2.5, 0, Math.PI * 2); ctx.fill(); }
+                        x += barWidth * 2;
+                    } break;
+                case "9":
+                    ctx.lineWidth = 2;
+                    for(let i = 0; i < bufferLength; i += 3) {
+                        barHeight = (dataArray[i] / 255.0) * (canvas.height - 15); ctx.beginPath(); ctx.moveTo(x, canvas.height);
+                        ctx.quadraticCurveTo(x + barWidth, canvas.height - barHeight * 1.3, x + barWidth * 2, canvas.height); ctx.stroke();
+                        x += barWidth * 3;
+                    } break;
+                case "10":
+                    ctx.fillStyle = activeColor + "22"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = activeColor;
+                    for(let i = 0; i < bufferLength; i++) {
+                        barHeight = (dataArray[i] / 255.0) * (canvas.height - 5); ctx.fillRect(x, canvas.height - barHeight, barWidth - 1, barHeight);
+                        ctx.clearRect(x, canvas.height - barHeight, barWidth, 2); x += barWidth;
+                    } break;
+            }
+        }
+
+        video.ontimeupdate = () => {
+            if(isNaN(video.duration)) return;
+            const pct = (video.currentTime / video.duration) * 100; trackProgress.value = pct;
+            let curM = Math.floor(video.currentTime / 60); let curS = Math.floor(video.currentTime % 60);
+            let durM = Math.floor(video.duration / 60); let durS = Math.floor(video.duration % 60);
+            timeCurrent.innerText = `${curM < 10 ? '0'+curM : curM}:${curS < 10 ? '0'+curS : curS}`;
+            timeTotal.innerText = `${durM < 10 ? '0'+durM : durM}:${durS < 10 ? '0'+durS : durS}`;
+        };
+
+        trackProgress.oninput = (e) => { if(!video.duration) return; video.currentTime = (e.target.value / 100) * video.duration; };
+        video.onended = () => { if (playMode === 'one') video.play(); else handleNextTrack(); };
+
+        let isDraggingVol = false;
+        volKnob.onmousedown = () => isDraggingVol = true;
+        window.onmouseup = () => isDraggingVol = false;
+        window.onmousemove = (e) => {
+            if(!isDraggingVol) return;
+            const rect = volKnob.getBoundingClientRect();
+            const centerX = rect.left + rect.width/2; const centerY = rect.top + rect.height/2;
+            const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180/Math.PI);
+            volKnob.style.transform = `rotate(${angle + 90}deg)`;
+            let normalizedVol = (angle + 180) / 360;
+            if(normalizedVol >= 0 && normalizedVol <= 1) video.volume = normalizedVol;
+        };
+    </script>
+</body>
+</html>
