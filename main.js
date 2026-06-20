@@ -1,32 +1,30 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
 function createWindow () {
   const win = new BrowserWindow({
-    width: 900,
-    height: 750,
-    resizable: true,
+    width: 860,
+    height: 720,
+    frame: false,          // ❌ ตัดขอบหน้าต่างขาวๆ ของ Windows ออก
+    transparent: true,     // ✨ ทำให้พื้นหลังนอกกรอบเครื่องเล่นโปร่งใส ทะลุเห็นหน้าจอคอม
+    resizable: true,       // 📐 อนุญาตให้ผู้ใช้ดึงยืด-หดขนาดเครื่องเล่นได้ตามต้องการ
     icon: path.join(__dirname, 'favicon.png'),
     webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true
+      nodeIntegration: true,
+      contextIsolation: false // เปิดให้ JavaScript ในหน้าเว็บสั่งปิดโปรแกรมได้
     }
   });
 
-  // ซ่อนเมนูบาร์ด้านบน (File, Edit, View) ให้แอปดูคลีนเหมือนเครื่องเล่นจริงๆ
   win.setMenu(null);
-
-  // โหลดหน้าเว็บเครื่องเล่นของคุณ
   win.loadFile('index.html');
 }
 
-app.whenReady().then(() => {
-  createWindow();
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
+// ระบบรับคำสั่งปิดแอปจากปุ่มกากบาทบนตัวเครื่องเล่น
+ipcMain.on('close-app', () => {
+  app.quit();
 });
+
+app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
